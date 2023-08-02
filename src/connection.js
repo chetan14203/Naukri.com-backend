@@ -1,14 +1,12 @@
 const mongoose = require("mongoose");
 
-const connectDB = async ()=>{
-    try{
-        await mongoose.connect("mongodb://127.0.0.1:27017/naukri",{
+const uri = "mongodb+srv://choudharyc355:2HOOmumRVLqCMwCP@backend.dz2blr7.mongodb.net/Backend?retryWrites=true&w=majority";
+const connectDB = () => {
+        console.log("connect DB..");
+        return mongoose.connect(uri,{
             useNewUrlParser : true,
-        })
-        console.log(`connected with database successfully..`);
-    }catch(err){
-        console.log(`connection is failed`);
-    }
+            useUnifiedTopology : true,
+        });
 }
 
 module.exports = connectDB;
