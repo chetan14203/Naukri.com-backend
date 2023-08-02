@@ -1,10 +1,12 @@
 const sendotp = require("../controller/otpController");
 const bcrypt = require("bcryptjs");
+const {User} = require("../models/users");
+const {Employer} = require("../models/employer");
 
 const verifyOtp = async (email, otp, passwordhash) => {
     const user = await OTP.findOne({ email });
     if (!user) {
-      return [false, "Invalid user."];
+      return [false, "Invalid Employee or Employer."];
     }
     if (user.expiredAt < user.createdAt) {
       await OTP.findOneAndRemove({ email });
@@ -35,11 +37,15 @@ const verifyOtp = async (email, otp, passwordhash) => {
   
   const recover = async (req, res) => {
     const email = req.body.email;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }) || await Employer.findOne({email});
     if (!user) {
-      return res.status(404).json("User is not registered");
+      return res.status(404).json("Employee or Employer is not registered");
     }
     sendotp(user,res);
   };
 
-  module.exports = {recover,changepassword};
+const resend = async (req,res) => {
+    recover(req,res);
+}
+
+  module.exports = {recover,changepassword,resend};

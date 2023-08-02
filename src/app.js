@@ -1,10 +1,12 @@
 const express = require("express");
 const app = express();
+const http = require('http');
 const mongoose = require("mongoose");
 const morgan = require("morgan");
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 9000;
 const cors = require("cors");
-
+require("dotenv").config();
+ 
 //middlewear
 app.use(cors());
 app.options("*",cors());

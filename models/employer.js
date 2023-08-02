@@ -36,7 +36,7 @@ const employerSchema = mongoose.Schema({
     },
     isAdmin : {
         type : Boolean,
-        default : true
+        default : true,
     }
 })
 

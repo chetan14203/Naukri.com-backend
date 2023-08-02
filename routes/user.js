@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const {getUser,getUserById,signUp,userUpdate,userDelete,verify} = require("../controller/userController");
-const {recover,changepassword} = require("../controller/passwordchangeController");
+const {getUser,getUserById,signUp,userUpdate,userDelete,verify,resendOtp,signin} = require("../controller/userController");
+const {recover,changepassword,resend} = require("../controller/passwordchangeController");
 
 const multer = require("multer");
 const path = require("path");
@@ -65,7 +65,10 @@ router.post("/signUp",signUpVal,signUp);
 router.put("/update/:id",uploadOptions,uploadVal,userUpdate);
 router.delete("/:id",userDelete);
 router.post("/verify/otp",verify);
+router.post("/verify/resend",resendOtp);
 router.post("/recover",recover);
 router.post("/changepassword",changepassword);
+router.post("/changepassword/resend",resend);
+router.get("/employee/login",signin);
 
 module.exports = router;

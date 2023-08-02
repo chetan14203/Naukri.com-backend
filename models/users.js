@@ -43,7 +43,14 @@ const userSchema = mongoose.Schema({
     isAdmin : {
         type : Boolean,
         default : false,
+    },
+    is_online : {
+        type : String,
+        default : '0'
     }
+},
+{
+    timestamps : true,
 })
 
 userSchema.virtual('id').get(function (){

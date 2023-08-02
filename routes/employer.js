@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete} = 
+const {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,signin} = 
                                                 require("../controller/employerController");
 const {recover,changepassword} = require("../controller/passwordchangeController");
                                                 
@@ -55,5 +55,6 @@ router.delete("/:id",employerDelete);
 router.post("../verify/otp",verify);
 router.post("/recover",recover);
 router.post("/chagepassword",changepassword);
+router.get("/employer/login",signin);
 
 module.exports = router;

@@ -4,6 +4,7 @@ const {validationResult} = require("express-validator");
 const sendotp = require("../controller/otpController");
 const {OTP} = require("../models/otpModels");
 const jwt = require("jsonwebtoken");
+require('dotenv').config();
 
 const getUser = async (req,res) => {
     const user = await User.find().select("-password");
@@ -127,62 +128,47 @@ const verify = async (req, res) => {
     return res.send(result);
 };
 
-const verifyOtp = async (email, otp, passwordhash) => {
-    const user = await OTP.findOne({ email });
-    if (!user) {
-      return [false, "Invalid user."];
-    }
-    if (user.expiredAt < user.createdAt) {
-      await OTP.findOneAndRemove({ email });
-      return [false, "OTP is expired."];
-    }
-    const isVerify = await bcrypt.compare(otp, user.otp);
-    if (!isVerify) {
-      return [false, "Invalid OTP."];
-    }
-    const updatedUser = await User.findOneAndUpdate(
-      { email },
-      { $set: { password: passwordhash } },
-      { new: true }
-    );
-    return [true, "Password is changed."];
-  };
-  
-  const changepassword = async (req, res) => {
-    const {email, otp, password } = req.body;
-    const passwordhash = await bcrypt.hash(password, 10);
-    const [success, result] = await verifyOtp(req.body.email, otp, passwordhash);
-    if (!success) {
-      return res.status(404).json(result);
-    }
-    await OTP.findOneAndRemove({ email });
-    return res.json(result);
-  };
-  
-  const recover = async (req, res) => {
-    const email = req.body.email;
+const resendOtp = async (req,res) => {
+  const resend = req.body.resend;
+  sendotp(req.body.email,res);
+  verify(req,res);
+};
+
+const signin = async (req,res) => {
+  try {
+    const { email, password } = req.body;
     const user = await User.findOne({ email });
+    const secret = process.env.SECRET_KEY;
+
     if (!user) {
-      return res.status(404).json("User is not registered");
+      return res.status(404).json({ message: "Employee is not registered" });
     }
-    sendotp(user,res);
-  };
 
-  const signin = async (req,res) => {
-    const {email, password} = req.body;
-    if(!email || !password){
-      res.json("All fields are required");
+    const passwordHash = user.passwordHash;
+
+    if (!password || !passwordHash) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
-    const user = await User.findOne({email});
-    if(!user){
-      res.status(404).json("Employer is not registered.");
+
+    const isPasswordValid = bcrypt.compareSync(password, passwordHash);
+
+    if (isPasswordValid) {
+      const token = jwt.sign(
+        {
+          userId: user.id,
+          isAdmin: user.isAdmin,
+        },
+        secret,
+        { expiresIn: "1d" }
+      );
+      res.status(200).json({ userId: user.id, token:token });
+    } else {
+      res.status(401).json({ message: "Invalid credentials" });
     }
-    const isPassword = await bcrypt.compare(password,user.password);
-    if(!isPassword){
-      res.status(404).json("Invalid Credentials.");
-    }
-    
-    res.status(200).redirect('/user/homepage');
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error logging in" });
   }
+}
 
-module.exports = {getUser,getUserById,signUp,userUpdate,userDelete,verify};
+module.exports = {getUser,getUserById,signUp,userUpdate,userDelete,verify,resendOtp,signin};
