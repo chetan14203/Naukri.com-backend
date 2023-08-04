@@ -28,8 +28,7 @@ const userRoutes = require("../routes/user");
 
 // handle Routes
 app.use("/user",userRoutes);
-app.use("/employer",employerRoutes);
-app.use("/job",jobRoutes);
+
 
 app.listen(port,() => {
     console.log(`Server is live at ${port}`);
