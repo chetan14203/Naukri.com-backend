@@ -121,41 +121,14 @@ const employerDelete = async (req,res) => {
     return res.status(200).json("Account is deleted.");
 }
 
-const signin = async (req,res) => {
-    try {
-      const { email, password } = req.body;
-      const user = await User.findOne({ email });
-      const secret = process.env.SECRET_KEY;
-  
-      if (!user) {
-        return res.status(404).json({ message: "Employee is not registered" });
-      }
-  
-      const passwordHash = user.passwordHash;
-  
-      if (!password || !passwordHash) {
-        return res.status(400).json({ message: "Invalid credentials" });
-      }
-  
-      const isPasswordValid = bcrypt.compareSync(password, passwordHash);
-  
-      if (isPasswordValid) {
-        const token = jwt.sign(
-          {
-            userId: user.id,
-            isAdmin: user.isAdmin,
-          },
-          secret,
-          { expiresIn: "1d" }
-        );
-        res.status(200).json({ userId: user.id, token:token });
-      } else {
-        res.status(401).json({ message: "Invalid credentials" });
-      }
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "Error logging in" });
-    }
+const resendOtp = async (req,res) => {
+  const resend = req.body.resend;
+  const user = req.params.id;
+  const email = user.email;
+  if(!email){
+    return res.json("Employer is not registered.")
   }
+  sendotp(email,res);
+};
 
-module.exports = {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,signin};
+module.exports = {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,resendOtp};

@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,signin} = 
+const {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,resendOtp} = 
                                                 require("../controller/employerController");
-const {recover,changepassword} = require("../controller/passwordchangeController");
+const {recover,changepassword,resend} = require("../controller/passwordchangeController");
                                                 
 
 const multer = require("multer");
@@ -48,13 +48,14 @@ const uploadOptions = multer({storage : storage,fileFilter:filefilter,limits : {
 ]);
 
 router.get("/",getEmployer);
-router.get("/:id",getEmployerById);
-router.post("/signUp",signUpVal,uploadOptions,uploadVal,employersignUp);
-router.put("/update/:id",uploadVal,uploadOptions,employerUpdate);
+router.get("/:id", getEmployerById);
+router.post("/signup",signUpVal,employersignUp); 
+router.put("/update/:id",uploadOptions,uploadVal,employerUpdate);
 router.delete("/:id",employerDelete);
-router.post("../verify/otp",verify);
+router.post("/verify/otp",verify);
+router.post("/verify/resend",resendOtp);
 router.post("/recover",recover);
-router.post("/chagepassword",changepassword);
-router.get("/employer/login",signin);
+router.post("/changepassword",changepassword);
+router.post("/changepassword/resend",resend);
 
 module.exports = router;

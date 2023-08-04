@@ -8,13 +8,14 @@ const transporter = nodemailer.createTransport({
     port : 465,
     secure : true,
     auth : {
-        user : process.env.AUTH_EMAIL,
-        pass : process.env.AUTH_PASS, 
+        user : "choudharyc355@gmail.com",
+        pass : "jpeosrimncienlsa", 
     }
 })
 
 transporter.verify((error,success) => {
     if(error){
+        console.log("Failed");
         console.log(error.message);
     }else{
         console.log(success);
@@ -22,11 +23,11 @@ transporter.verify((error,success) => {
     }
 })
 
-const sendotp = async ({email}, res) => {
+const sendotp = async (email, res) => {
     try{
         const otp = `${Math.floor(1000+Math.random()*9000)}`;
         const mailOptions = {
-            from : "d7209367@gmail.com",
+            from : "choudharyc355@gmail.com",
             to : email,
             sucject : "Verify your Account.",
             html : `<p>Enter otp <b>${otp}</b> to verify your account.</p>`

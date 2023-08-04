@@ -1,5 +1,6 @@
 const sendotp = require("../controller/otpController");
 const bcrypt = require("bcryptjs");
+const {OTP} = require("../models/otpModels")
 const {User} = require("../models/users");
 const {Employer} = require("../models/employer");
 
@@ -41,10 +42,15 @@ const verifyOtp = async (email, otp, passwordhash) => {
     if (!user) {
       return res.status(404).json("Employee or Employer is not registered");
     }
-    sendotp(user,res);
+    sendotp(email,res);
   };
 
 const resend = async (req,res) => {
+    const email = req.body.email;
+    const isEmail = await User.findOne({email});
+    if(!isEmail){
+      return res.json("Employee or Employer is not registered.")
+    }
     recover(req,res);
 }
 

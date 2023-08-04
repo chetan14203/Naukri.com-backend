@@ -29,13 +29,13 @@ const getUserById = async (req,res) => {
     return res.status(200).json(userById);
 }
 
-const signUp = async (req,res) => {
+const signup = async (req,res) => {
     try{
           const errors = validationResult(req);
           if(!errors.isEmpty()){
             return res.status(409).json(errors.array());
           }
-          const {fullName, email, userpassword, mobileNumber, position, workStatus, workLocation} = req.body;
+          const {fullName,email,password,mobileNumber,position,workStatus,workLocation} = req.body;
           const Emailregistered = await User.findOne({email :email});
           if(Emailregistered){
             return res.status(404).json("Email is already registered.");
@@ -44,16 +44,20 @@ const signUp = async (req,res) => {
           if(numberRegistered){
             return res.status(404).json("Mobile Number is already registered.");
           }
-          const passwordHash = bcrypt.hashSync(userpassword,10);
           let userRegistration = User({
             fullName : fullName,
             email : email,
-            password :passwordHash,
+            password :password,
             mobileNumber : mobileNumber,
             position : position,
             workStatus : workStatus,
             workLocation : workLocation,
           })
+          const token = await userRegistration.generateAuthToken();
+          res.cookie("jwt", token, {
+            expires : new Date(Date.now()+30000),
+            httpOnly : true,
+          });
           userRegistration = await userRegistration.save();
           if(!userRegistration){
             return res.status(404).json("Account is not valid.");
@@ -115,6 +119,7 @@ const validateUserSignUp = async (email, otp) => {
   const updatedUser = await User.findOneAndUpdate({email}, {
     $set: { verified: true },
   },{new : true});
+  await OTP.findOneAndRemove({email});
   return [true, updatedUser];
 };
 
@@ -124,51 +129,49 @@ const verify = async (req, res) => {
     if (!success) {
       return res.status(404).json(result);
     }
-    await OTP.findOneAndRemove({email});
     return res.send(result);
 };
 
 const resendOtp = async (req,res) => {
-  const resend = req.body.resend;
-  sendotp(req.body.email,res);
-  verify(req,res);
+  const user = req.params.id;
+  const email = user.email;
+  if(!email){
+    return res.json("Employee is not registered.")
+  }
+  sendotp(email,res);
 };
 
 const signin = async (req,res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    const secret = process.env.SECRET_KEY;
+  const email = req.body.email;
+  const password = req.body.password;
 
-    if (!user) {
-      return res.status(404).json({ message: "Employee is not registered" });
-    }
+  const useremail = await User.findOne({email});
+  const isMatch = await bcrypt.compare(password,useremail.password);
+  const token = await useremail.generateAuthToken();
+  res.cookie("jwt", token, {
+    expires : new Date(Date.now()+60000),
+    httpOnly : true,
+  });
+  if(!useremail){
+    return res.json("Employee is not registered");
+  }
+  if(isMatch){
+    return res.json(useremail);
+  }
+  return res.json("Invalid Credentials");
+}
 
-    const passwordHash = user.passwordHash;
-
-    if (!password || !passwordHash) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    const isPasswordValid = bcrypt.compareSync(password, passwordHash);
-
-    if (isPasswordValid) {
-      const token = jwt.sign(
-        {
-          userId: user.id,
-          isAdmin: user.isAdmin,
-        },
-        secret,
-        { expiresIn: "1d" }
-      );
-      res.status(200).json({ userId: user.id, token:token });
-    } else {
-      res.status(401).json({ message: "Invalid credentials" });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error logging in" });
+const logout = async (req,res) => {
+  try{
+    req.user.tokens = req.user.tokens.filter((elem) =>{
+      return elem.token !== req.token;
+    })
+    res.clearCookie("jwt");
+    await req.user.save();
+    res.render("login");
+  }catch(error){
+    res.status(500).send(error.message);
   }
 }
 
-module.exports = {getUser,getUserById,signUp,userUpdate,userDelete,verify,resendOtp,signin};
+module.exports = {getUser,getUserById,signup,userUpdate,userDelete,verify,resendOtp,signin,logout};
