@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 require('dotenv').config();
 
 const getUser = async (req,res) => {
-    const user = await User.find().select("-password -tokens");
+    const user = await User.find().select({password : 0,tokens : 0});
     if(!user){
         return res.status(404).json("User is not registered");
     }
