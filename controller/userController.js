@@ -18,9 +18,9 @@ const getUserById = async (req,res) => {
     const {id} = req.params;
     const userById = await User.find({
         "$or" : [
-            {fullName : {$regex : id}},
-            {worklocation : {$regex : id}},
-            {position : {$regex : id}},
+            {fullName : {$regex : id, $options: "i"}},
+            {worklocation : {$regex : id, $options: "i"}},
+            {position : {$regex : id, $options: "i"}},
         ]
     }).select('-tokens -password');
     if(!userById){
