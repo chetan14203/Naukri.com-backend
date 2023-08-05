@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 require('dotenv').config();
 
 const getUser = async (req,res) => {
-    const user = await User.find().select('-tokens -password -__v');
+    const user = await User.find().select('-tokens -password -__v -verified -isAdmin');
     if(!user){
         return res.status(404).json("User is not registered");
     }
@@ -15,14 +15,14 @@ const getUser = async (req,res) => {
 }
 
 const getUserById = async (req,res) => {
-    const {id} = req.params;
+    const id = req.body.search;
     const userById = await User.find({
         "$or" : [
             {fullName : {$regex : id, $options: "i"}},
             {worklocation : {$regex : id, $options: "i"}},
             {position : {$regex : id, $options: "i"}},
         ]
-    }).select('-tokens -password');
+    }).select('-tokens -password -__v -verified -isAdmin');
     if(!userById){
         return res.status(404).json("No record is available");
     }
@@ -35,7 +35,7 @@ const signup = async (req,res) => {
           if(!errors.isEmpty()){
             return res.status(409).json(errors.array());
           }
-          const {fullName,email,password,mobileNumber,position,workStatus,workLocation} = req.body;
+          const {fullName,email,password,mobileNumber,position,experience,workLocation} = req.body;
           const Emailregistered = await User.findOne({email :email});
           if(Emailregistered){
             return res.status(404).json("Email is already registered.");
@@ -50,7 +50,7 @@ const signup = async (req,res) => {
             password :password,
             mobileNumber : mobileNumber,
             position : position,
-            workStatus : workStatus,
+            experience : experience,
             workLocation : workLocation,
           })
           const token = await userRegistration.generateAuthToken();
@@ -83,14 +83,14 @@ const userUpdate = async (req,res) =>{
         email : req.body.email,
         mobileNumber : req.body.mobileNumber,
         position : req.body.position,
-        workStatus : req.body.workStatus,
+        experience : req.body.workStatus,
         resume : `${basePath}/${docs}`,
         workLocation : req.body.workLocation,
     })
     if(!user){
         return res.status(404).json("User is not registered");
     }
-    return res.status(200).json(user);
+    return res.status(200).json("Account is updated.");
 }
 
 const userDelete = async (req,res) => {
@@ -120,7 +120,7 @@ const validateUserSignUp = async (email, otp) => {
     $set: { verified: true },
   },{new : true});
   await OTP.findOneAndRemove({email});
-  return [true, updatedUser];
+  return [true, "Account is verified."];
 };
 
 const verify = async (req, res) => {
@@ -156,7 +156,7 @@ const signin = async (req,res) => {
     return res.json("Employee is not registered");
   }
   if(isMatch){
-    return res.json(useremail);
+    return res.redirect("/homepage");
   }
   return res.json("Invalid Credentials");
 }
@@ -168,9 +168,9 @@ const logout = async (req,res) => {
     })
     res.clearCookie("jwt");
     await req.user.save();
-    res.render("login");
+    return res.redirect("/login");
   }catch(error){
-    res.status(500).send(error.message);
+    return res.status(500).send(error.message);
   }
 }
 

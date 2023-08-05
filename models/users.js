@@ -28,7 +28,7 @@ const userSchema = mongoose.Schema({
     position : {
         type : String,
     },
-    workStatus : {
+    experience : {
         type : String,
         default : "Fresher",
     },

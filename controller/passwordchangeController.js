@@ -27,6 +27,9 @@ const verifyOtp = async (email, otp, passwordhash) => {
   
   const changepassword = async (req, res) => {
     const {email, otp, password } = req.body;
+    if(!email || !otp || !password){
+      return res.json("All fiels are required.");
+    }
     const passwordhash = await bcrypt.hash(password, 10);
     const [success, result] = await verifyOtp(req.body.email, otp, passwordhash);
     if (!success) {
@@ -38,6 +41,9 @@ const verifyOtp = async (email, otp, passwordhash) => {
   
   const recover = async (req, res) => {
     const email = req.body.email;
+    if(!email){
+      return res.json("Email is required to recover account.");
+    }
     const user = await User.findOne({ email }) || await Employer.findOne({email});
     if (!user) {
       return res.status(404).json("Employee or Employer is not registered");
@@ -46,7 +52,10 @@ const verifyOtp = async (email, otp, passwordhash) => {
   };
 
 const resend = async (req,res) => {
-    const email = req.body.email;
+    const {email} = req.params;
+    if(!email){
+      return res.json("Email is required.");
+    }
     const isEmail = await User.findOne({email});
     if(!isEmail){
       return res.json("Employee or Employer is not registered.")
