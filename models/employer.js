@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const employerSchema = mongoose.Schema({
     companyName : {
@@ -37,7 +38,32 @@ const employerSchema = mongoose.Schema({
     isAdmin : {
         type : Boolean,
         default : true,
+    },
+    tokens : [{
+        token : {
+            type : String,
+            required : true,
+        }
+    }]
+})
+
+employerSchema.methods.generateAuthToken = async function(){
+    try{
+        const token = jwt.sign({_id:this._id.toString()},process.env.SECRET_KEY);
+        this.tokens = this.tokens.concat({token});
+        await this.save();
+        return token;
+    }catch(error){
+        console.log(error.message);
+        return res.send(error.message);
     }
+}
+
+employerSchema.pre("save",async function(next){
+    if(this.isModified("password")){
+        this.password = await bcrypt.hash(this.password,10);
+    }
+    next();
 })
 
 employerSchema.virtual("id").get(function (){

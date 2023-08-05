@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,resendOtp} = 
+const {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,resendOtp,signin,logout} = 
                                                 require("../controller/employerController");
 const {recover,changepassword,resend} = require("../controller/passwordchangeController");
                                                 
@@ -57,5 +57,7 @@ router.post("/verify/resend",resendOtp);
 router.post("/recover",recover);
 router.post("/changepassword",changepassword);
 router.post("/changepassword/resend",resend);
+router.post("/signin",signin);
+router.get("/logout",logout);
 
 module.exports = router;

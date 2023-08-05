@@ -6,7 +6,7 @@ const sendotp = require("../controller/otpController");
 const jwt = require("jsonwebtoken");
 
 const getEmployer = async (req,res) => {
-    const employer = await Employer.find().select("-password");
+    const employer = await Employer.find().select("-password -tokens -__v -isAdmin");
     if(!employer){
         return res.status(404).json("Employer is not registered.");
     }
@@ -20,7 +20,7 @@ const getEmployerById = async (req,res) => {
             {companyName : {$regex : id}},
             {employerName : {$regex : id}},
         ]
-    }).select("-password");
+    }).select("-password -tokens -__v -isAdmin");
     if(!getEmployerById){
         return res.status(404).json("Employer is Invalid.");
     }
@@ -33,7 +33,6 @@ const employersignUp = async (req,res) => {
         if(!errors.isEmpty()){
             return res.status(409).json(errors.array());
         }
-        passwordHash = bcrypt.hashSync(req.body.password,10);
         const basePath = `${req.protocol}://${req.get('host')}`;
         const logoName = req.files.logo[0].filename;
         const profileName = req.files.profile[0].filename;
@@ -42,11 +41,16 @@ const employersignUp = async (req,res) => {
             employerName : req.body.employerName,
             profile : `${basePath}/${profileName}`,
             position : req.body.position,
-            password : passwordHash,
+            password : req.body.password,
             logo : `${basePath}/${logoName}`,
             companyEstablished : req.body.comapnyEstablished,
         })
+        const token = employerRegistration.generateAuthToken();
         employerRegistration = await employerRegistration.save();
+        res.cookie("jwt", token, {
+            expires : new Date(Date.now()+30000),
+            httpOnly : true,
+        });
         if(!employerRegistration){
             return res.status(404).json("Employer is not found.");
         }
@@ -131,4 +135,37 @@ const resendOtp = async (req,res) => {
   sendotp(email,res);
 };
 
-module.exports = {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,resendOtp};
+const signin = async (req,res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+  
+    const useremail = await Employer.findOne({email});
+    const isMatch = await bcrypt.compare(password,useremail.password);
+    const token = await useremail.generateAuthToken();
+    res.cookie("jwt", token, {
+      expires : new Date(Date.now()+60000),
+      httpOnly : true,
+    });
+    if(!useremail){
+      return res.json("Employee is not registered");
+    }
+    if(isMatch){
+      return res.redirect("/homepage");
+    }
+    return res.json("Invalid Credentials");
+  }
+  
+const logout = async (req,res) => {
+    try{
+      req.user.tokens = req.user.tokens.filter((elem) =>{
+        return elem.token !== req.token;
+      })
+      res.clearCookie("jwt");
+      await req.user.save();
+      return res.redirect("/login");
+    }catch(error){
+      return res.status(500).send(error.message);
+    }
+  }
+
+module.exports = {getEmployer,getEmployerById,employersignUp,verify,employerUpdate,employerDelete,resendOtp,signin,logout};
