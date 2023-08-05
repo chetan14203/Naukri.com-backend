@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middlewear/auth");
+const jobController = require("../controller/joblistingController");
 
-const {getjob,getjobbyId,postJob,updateJob,jobDelete} = require("../controller/joblistingController");
-
-router.get("/getjob",getjob);
-router.get("/:id",getjobbyId);
-router.post("/",postJob);
-router.put("/update/:id",updateJob);
-router.delete("/delete/:id",jobDelete);
+router.get("/getjob",auth,jobController.getJobs);
+router.get("/:id",auth,jobController.getJobById);
+router.post("/",auth,jobController.createJob);
+router.put("/update/:id",auth,jobController.updateJob);
+router.delete("/delete/:id",auth,jobController.deleteJob);
 
 module.exports = router;

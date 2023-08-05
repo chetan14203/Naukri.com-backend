@@ -1,70 +1,93 @@
-const {JOBLIST} = require("../models/joblisting");
-const {Employer} = require("../models/employer");
+const {Job} = require("../models/joblisting");
+const {User} = require("../models/users");
 
-const getjob = async (req,res) => {
-    const job = await JOBLIST.find();
-    if(!job){
-        res.status(404).json(`Jobs are not available.`)
+const getJobs = async (req,res) => {
+    try{
+        const job = await Job.find();
+        if(!job){
+            return res.json("No job is found.");
+        }
+        return res.json(job);
+    }catch(error){
+        console.log(error.message);
     }
-    res.status(200).json(job);
 }
 
-const getjobbyId = async(req,res) => {
-    const id = req.params.id;
-    const jobId = await JOBLIST.findById({
-        "$or" : [
-            {companyName : {$regex : id}},
-            {postName : {$regex : id}},
-            {location : {$regex : id}}
-        ]
-    });
-    if(!jobId){
-        res.status(404).json("Jobs are not found.");
+const getJobById = async (req,res) => {
+    try{
+        const id = req.body.search;
+        const job = await Job.find({
+            "$or" :[
+                {position : {$regex : id, $options : "i"}},
+                {location : {$regex : id, $options : "i"}},
+            ]
+        });
+        return res.json(job);
+    }catch(error){
+        console.log(error.message);
     }
-    res.status(200).json(jobId);
 }
 
-const postJob = async (req,res) => {
-    const employer = await Employer.findById(req.body.employer);
-    if(!employer){
-        res.status(404).json("Invalid Employer.");
+const createJob = async (req,res) => {
+    try{
+        const user = req.params.id;
+        if(!user){
+            return res.json("User is not registered.");
+        }
+        const admin = await User.findOne({_id:user}).isAdmin;
+        if(!admin){
+            return res.json("User can not post job.")
+        }
+        const {position,location,discription} = req.body;
+        if(!position || !location || !discription){
+            return res.json("All fields are required");
+        }
+        let newJob = Job({
+            position : position,
+            location : location,
+            discription : discription
+        })
+        newJob = await newJob.save();
+        return res.json("Job is posted.");
+    }catch(error){
+        console.log(error.message);
     }
-    let newJob = new JOBLIST({
-        employer : req.body.employer,
-        companyName : req.body.companyName,
-        postName : req.body.postName,
-        location : req.body.location,
-        jobDescription : req.body.jobDescription,
-        otherDetails : req.body.otherDetails
-    })
-    newJob = await newJob.save();
-    if(!newJob){
-        res.status(404).json('Invalid Job.');
-    }
-    res.status(200).json(newJob);
 }
 
 const updateJob = async (req,res) => {
-    const Jobupdate = await JOBLIST.findByIdAndUpdate(req.params.id,{
-        employer : req.body.employer,
-        companyName : req.body.companyName,
-        postName : req.body.postName,
-        location : req.body.location,
-        jobDescription : req.body.jobDescription,
-        otherDetails : req.body.otherDetails
-    }, {new : true});
-    if(!Jobupdate){
-        res.status(404).json("Invalid Job");
+    try{
+        const admin = await User.findOne({_id:req.params.id});
+        if(!admin){
+            return res.json("User cannot modify the job posting.");
+        }
+        const jobupdate = await Job.findByIdAndUpdate({_id : req.params.id},{
+            position : req.body.position,
+            location : req.body.location,
+            discription : req.body.discription
+        },{new : true});
+        if(!jobupdate){
+            return res.json("Job is not found.");
+        }
+        return res.json("Job is updated.");
+    }catch(error){
+        console.log(error.message);
     }
-    res.status(200).json(Jobupdate);
 }
 
-const jobDelete = async (req,res) => {
-    const job = await JOBLIST.findByIdAndRemove(req.params.id);
-    if(!job){
-        res.status(404).json("Invalid Job.");
+const deleteJob = async (req,res) => {
+    try{
+        const admin = await User.findOne({_id:req.params.id}).isAdmin;
+        if(!admin){
+            return res.json("User can not delete job.");
+        }
+        const jobdelete = await Job.findByIdAndRemove({_id:req.params.id});
+        if(!jobdelete){
+            return res.json("Job not found.")
+        }
+        return res.json("Job is deleted.");
+    }catch(error){
+        console.log(error.message);
     }
-    res.status(200).json("Job is deleted.");
 }
 
-module.exports = {getjob,getjobbyId,postJob,updateJob,jobDelete};
+module.exports = {getJobs,getJobById,createJob,updateJob,deleteJob};

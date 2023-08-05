@@ -59,12 +59,12 @@ const uploadOptions = multer({storage : storage,fileFilter : filefilter}).fields
     {name : "profile" , maxCount : 1}, {name : "resume",maxCount : 1}
 ]);
 
-router.get("/",getUser);
-router.get("/:id", getUserById);
+router.get("/",auth,getUser);
+router.get("/:id",auth,getUserById);
 router.post("/signup",signUpVal,signup); 
 router.put("/update/:id",uploadOptions,uploadVal,auth,userUpdate);
 router.delete("/:id",auth,userDelete);
-router.post("/verify/otp",verify);
+router.post("/verify/otp",auth,verify);
 router.post("/verify/resend",auth,resendOtp);
 router.post("/recover",recover);
 router.post("/changepassword",changepassword);

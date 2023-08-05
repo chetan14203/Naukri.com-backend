@@ -35,7 +35,7 @@ const signup = async (req,res) => {
           if(!errors.isEmpty()){
             return res.status(409).json(errors.array());
           }
-          const {fullName,email,password,mobileNumber,position,experience,workLocation} = req.body;
+          const {fullName,email,password,mobileNumber,position,experience,companyName,workLocation} = req.body;
           const Emailregistered = await User.findOne({email :email});
           if(Emailregistered){
             return res.status(404).json("Email is already registered.");
@@ -51,6 +51,7 @@ const signup = async (req,res) => {
             mobileNumber : mobileNumber,
             position : position,
             experience : experience,
+            companyName : companyName,
             workLocation : workLocation,
           })
           const token = await userRegistration.generateAuthToken();
@@ -124,7 +125,7 @@ const validateUserSignUp = async (email, otp) => {
 };
 
 const verify = async (req, res) => {
-    const { email, otp } = req.body;
+    const {email,otp} = req.body;
     const [success, result] = await validateUserSignUp(email, otp);
     if (!success) {
       return res.status(404).json(result);
@@ -144,7 +145,10 @@ const resendOtp = async (req,res) => {
 const signin = async (req,res) => {
   const email = req.body.email;
   const password = req.body.password;
-
+  const isVerified = email.verified;
+  if(!isVerified){
+    return res.json("Verify your account.");
+  }
   const useremail = await User.findOne({email});
   const isMatch = await bcrypt.compare(password,useremail.password);
   const token = await useremail.generateAuthToken();

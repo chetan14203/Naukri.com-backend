@@ -2,12 +2,11 @@ const sendotp = require("../controller/otpController");
 const bcrypt = require("bcryptjs");
 const {OTP} = require("../models/otpModels")
 const {User} = require("../models/users");
-const {Employer} = require("../models/employer");
 
 const verifyOtp = async (email, otp, passwordhash) => {
     const user = await OTP.findOne({ email });
     if (!user) {
-      return [false, "Invalid Employee or Employer."];
+      return [false, "Invalid User"];
     }
     if (user.expiredAt < user.createdAt) {
       await OTP.findOneAndRemove({ email });

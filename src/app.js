@@ -25,9 +25,11 @@ mongoose.connect(uri).then(() => {
 
 // Routes
 const userRoutes = require("../routes/user");
+const jobRoutes = require("../routes/jobs");
 
 // handle Routes
 app.use("/user",userRoutes);
+app.use("/jobs",jobRoutes);
 
 
 app.listen(port,() => {

@@ -1,15 +1,12 @@
 const mongoose = require("mongoose");
 
-const joblistschema = mongoose.Schema({
-    employer : {
+const jobSchema = mongoose.Schema({
+    _id : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : 'Employer'
+        ref : "User",
+        required : true,
     },
-    companyName : {
-        type : String,
-        required : true
-    },
-    postName : {
+    position : {
         type : String,
         required : true
     },
@@ -17,14 +14,26 @@ const joblistschema = mongoose.Schema({
         type : String,
         required : true
     },
-    jobDescription : {
-        type : String,
-        default : ''
-    },
-    otherDetails : {
+    discription : {
         type : String,
         required : true
     },
-});
+    posts : {
+        type : Object,
+        default : []
+    },
+    comments : {
+        type : Object,
+        default : []
+    },
+    actions : {
+        type : Object,
+        default : [],
+    },
+    feed : {
+        type : Object,
+        default : []
+    }
+})
 
-exports.JOBLIST = mongoose.model('JOBLIST',joblistschema);
+exports.Job = mongoose.model("Job",jobSchema);
