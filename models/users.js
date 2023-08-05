@@ -53,6 +53,8 @@ const userSchema = mongoose.Schema({
             required : true,
         }
     }]
+},{
+    versionKey : false,
 })
 
 // generating token
