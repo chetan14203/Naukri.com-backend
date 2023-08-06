@@ -61,12 +61,12 @@ const signup = async (req,res) => {
           });
           userRegistration = await userRegistration.save();
           if(!userRegistration){
-            return res.status(404).json({message :"Account is not valid."});
+            return res.status(409).json({message :"Account is not valid."});
           }
           sendotp(email,res);
     }catch(err){
-        console.log(err);
-        return res.status(500).json(err.message);
+        console.log(err.message);
+        return res.status(500).json({message : "Something went Wrong,"});
     }      
 }
 
