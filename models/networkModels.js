@@ -8,6 +8,11 @@ const networkSchema = mongoose.Schema({
     connection : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "User"
+    },
+    status : {
+        type : String,
+        enum : ['pending','accepted','rejected'],
+        default : 'pending'
     }
 })
 

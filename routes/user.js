@@ -70,6 +70,6 @@ router.post("/recover",recover);
 router.post("/changepassword",changepassword);
 router.post("/changepassword/resend",resend);
 router.post("/login",signin)
-router.get("/logout",logout);
+router.get("/logout",auth,logout);
 
 module.exports = router;
