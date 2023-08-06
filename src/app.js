@@ -26,10 +26,12 @@ mongoose.connect(uri).then(() => {
 // Routes
 const userRoutes = require("../routes/user");
 const jobRoutes = require("../routes/jobs");
+const paymentRoutes = require("../routes/payment_route");
 
 // handle Routes
 app.use("/user",userRoutes);
 app.use("/jobs",jobRoutes);
+app.use("/payment",paymentRoutes);
 
 
 app.listen(port,() => {

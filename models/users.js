@@ -51,26 +51,6 @@ const userSchema = mongoose.Schema({
         type : Boolean,
         default : false,
     },
-    followers : {
-        type : Object,
-        default : []
-    },
-    following : {
-        type : Object,
-        default : []
-    },
-    networks : {
-        type : Object,
-        default : [],
-    },
-    sendreqs : {
-        type : Object,
-        default : []
-    },
-    networksreqs : {
-        type : Object,
-        default : []
-    },
     tokens : [{
         token : {
             type : String,
