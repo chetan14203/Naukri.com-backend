@@ -38,11 +38,11 @@ const signup = async (req,res) => {
           const {fullName,email,password,mobileNumber,position,experience,companyName,workLocation} = req.body;
           const Emailregistered = await User.findOne({email :email});
           if(Emailregistered){
-            return res.status(404).json("Email is already registered.");
+            return res.status(404).json({message :"Email is already registered."});
           }
           const numberRegistered = await User.findOne({mobileNumber :mobileNumber});
           if(numberRegistered){
-            return res.status(404).json("Mobile Number is already registered.");
+            return res.status(404).json({message :"Mobile Number is already registered."});
           }
           let userRegistration = User({
             fullName : fullName,
@@ -61,7 +61,7 @@ const signup = async (req,res) => {
           });
           userRegistration = await userRegistration.save();
           if(!userRegistration){
-            return res.status(404).json("Account is not valid.");
+            return res.status(404).json({message :"Account is not valid."});
           }
           sendotp(email,res);
     }catch(err){
