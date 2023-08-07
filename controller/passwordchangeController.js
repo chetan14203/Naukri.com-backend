@@ -25,41 +25,57 @@ const verifyOtp = async (email, otp, passwordhash) => {
   };
   
   const changepassword = async (req, res) => {
-    const {email, otp, password } = req.body;
-    if(!email || !otp || !password){
-      return res.json("All fiels are required.");
+    try{
+      const {email, otp, password } = req.body;
+      if(!email || !otp || !password){
+        return res.json("All fiels are required.");
+      }
+      const passwordhash = await bcrypt.hash(password, 10);
+      const [success, result] = await verifyOtp(req.body.email, otp, passwordhash);
+      if (!success) {
+        return res.status(404).json(result);
+      }
+      await OTP.findOneAndRemove({ email });
+      return res.json(result);
+    }catch(error){
+      console.log(error.message);
+      return res.status(500).json({message : "Something went wrong."});
     }
-    const passwordhash = await bcrypt.hash(password, 10);
-    const [success, result] = await verifyOtp(req.body.email, otp, passwordhash);
-    if (!success) {
-      return res.status(404).json(result);
-    }
-    await OTP.findOneAndRemove({ email });
-    return res.json(result);
   };
   
   const recover = async (req, res) => {
-    const email = req.body.email;
-    if(!email){
-      return res.json("Email is required to recover account.");
+    try{
+      const email = req.body.email;
+      if(!email){
+         return res.json("Email is required to recover account.");
+      }
+      const user = await User.findOne({ email }) || await Employer.findOne({email});
+      if (!user) {
+         return res.status(404).json("Employee or Employer is not registered");
+      }
+      sendotp(email,res);
+    }catch(error){
+      console.log(error.message);
+      return res.status(500).json({message : "Something went wrong."})
     }
-    const user = await User.findOne({ email }) || await Employer.findOne({email});
-    if (!user) {
-      return res.status(404).json("Employee or Employer is not registered");
-    }
-    sendotp(email,res);
   };
 
 const resend = async (req,res) => {
-    const {email} = req.params;
-    if(!email){
-      return res.json("Email is required.");
+    try{
+      const {email} = req.body;
+      if(!email){
+         return res.json({message :"Email is required."});
+      }
+      const isEmail = await User.findOne({email});
+      if(!isEmail){
+         return res.json({message :"Employee or Employer is not registered."})
+      }
+      await OTP.findByIdAndRemove(email);
+      recover(req,res);
+    }catch(error){
+      console.log(error.message);
+      return res.status(500).json({message : "Something went wrong."})
     }
-    const isEmail = await User.findOne({email});
-    if(!isEmail){
-      return res.json("Employee or Employer is not registered.")
-    }
-    recover(req,res);
 }
 
   module.exports = {recover,changepassword,resend};

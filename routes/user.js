@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {getUser,getUserById,signup,userUpdate,userDelete,verify,resendOtp,signin,logout} = require("../controller/userController");
+const {getUser,getUserById,signup,userUpdate,userDelete,verify,resendOtp,signin,logout,getProfile} = require("../controller/userController");
 const {recover,changepassword,resend} = require("../controller/passwordchangeController");
 const auth = require("../middlewear/auth")
 
@@ -71,5 +71,6 @@ router.post("/changepassword",changepassword);
 router.post("/changepassword/resend",resend);
 router.post("/login",signin)
 router.get("/logout",auth,logout);
+router.get("/profile/:id",auth,getProfile);
 
 module.exports = router;

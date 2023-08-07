@@ -2,18 +2,30 @@ const {Job} = require("../models/joblisting");
 const {User} = require("../models/users");
 
 const getJobs = async (req,res) => {
+    const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
     try{
-        const job = await Job.find();
+        const job = await Job.find()
+             .populate('user')
+             .skip((page-1) * itemsPerPage)
+             .limit(itemsPerPage);
         if(!job){
             return res.json("No job is found.");
         }
-        return res.json(job);
+        return res.json({
+            job,
+            currentPage: page,
+            totalPages: Math.ceil(totalCount / itemsPerPage),
+            totalUsers: totalCount
+        });
     }catch(error){
         console.log(error.message);
     }
 }
 
 const getJobById = async (req,res) => {
+    const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
     try{
         const id = req.body.search;
         const job = await Job.find({
@@ -21,8 +33,16 @@ const getJobById = async (req,res) => {
                 {position : {$regex : id, $options : "i"}},
                 {location : {$regex : id, $options : "i"}},
             ]
+        })
+           .populate('user')
+           .skip((page-1) * itemsPerPage)
+           .limit(itemsPerPage);
+        return res.json({
+            job,
+            currentPage: page,
+            totalPages: Math.ceil(totalCount / itemsPerPage),
+            totalUsers: totalCount
         });
-        return res.json(job);
     }catch(error){
         console.log(error.message);
     }

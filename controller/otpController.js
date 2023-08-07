@@ -9,8 +9,10 @@ const transporter = nodemailer.createTransport({
     secure : true,
     auth : {
         user : "choudharyc355@gmail.com",
-        pass : "jpeosrimncienlsa", 
-    }
+        pass : "aeeaypyedgpapxhh", 
+    },tls: {
+        rejectUnauthorized: false, // Temporary setting for troubleshooting
+    },
 })
 
 transporter.verify((error,success) => {
@@ -27,7 +29,7 @@ const sendotp = async (email, res) => {
     try{
         const otp = `${Math.floor(1000+Math.random()*9000)}`;
         const mailOptions = {
-            from : "choudharyc355@gmail.com",
+            from : "d7209367@gmail.com",
             to : email,
             sucject : "Verify your Account.",
             html : `<p>Enter otp <b>${otp}</b> to verify your account.</p>`

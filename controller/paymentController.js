@@ -55,7 +55,7 @@ const paymentRefund = async (req,res) => {
         if(user.success != "Success"){
             return res.json({message : "You cannot claim for refund."});
         }
-        razorpayInstance.payments.refund(payment_id, {
+        razorpayinstance.payments.refund(paymentid, {
             amount: amount,
         },function (err, refund){
             if (err) {
@@ -72,4 +72,17 @@ const paymentRefund = async (req,res) => {
     }
 }
 
-module.exports = {createOrder,paymentSuccess,paymentRefund};
+const getPayment = async (req,res) => {
+    try{
+        const payment = await Payment.findOne(req.params.id);
+        if(!payment){
+            return res.json({message : "You have not done payment."});
+        }
+        return res.json(payment);
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({message : "Something went wrong."});
+    }
+}
+
+module.exports = {createOrder,paymentSuccess,paymentRefund,getPayment};

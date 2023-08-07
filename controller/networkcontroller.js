@@ -1,7 +1,6 @@
-const {User} = require("../models/networkModels");
 const {Network} = require("../models/networkModels");
 
-const sendreqs = async (req,res) => {
+const sendReqs = async (req,res) => {
     try{
         const requestedId = req.user._id;
         const receiverId = req.user._id;
@@ -54,3 +53,22 @@ const acceptReqs = async (req,res) => {
         return res.status(500).json({message :"Something went Wrong."});
     }
 }
+
+const rejectReqs = async (req,res) => {
+    try{
+        const userId = req.user._id;
+        const recieverId = req.params.id;
+        const networkReqs = await Network.findOne({user:userId,connection:recieverId});
+        if(!networkReqs){
+            res.status(404).json({message:"Request is not found"});
+        }
+        networkReqs.status = 'rejected';
+        await networkReqs.save();
+        return res.json({message : "Request is rejected."});
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({message : "Something went wrong."});
+    }
+}
+
+module.exports = {sendReqs,getReqs,acceptReqs,rejectReqs};

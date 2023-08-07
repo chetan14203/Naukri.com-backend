@@ -17,22 +17,6 @@ const jobSchema = mongoose.Schema({
     discription : {
         type : String,
         required : true
-    },
-    posts : {
-        type : Object,
-        default : []
-    },
-    comments : {
-        type : Object,
-        default : []
-    },
-    actions : {
-        type : Object,
-        default : [],
-    },
-    feed : {
-        type : Object,
-        default : []
     }
 })
 
